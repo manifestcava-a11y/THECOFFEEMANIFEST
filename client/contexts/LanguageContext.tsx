@@ -261,7 +261,7 @@ const translations = {
     
     // Water Page
     'water.title': 'ВОДА',
-    'water.chooseSize': 'Оберіть ідеальний розмір для ваших потреб',
+    'water.chooseSize': 'Оберіть необхідну кількість для ваших потреб',
     'water.popular': 'Популярний',
     'water.features': 'Особливості:',
     'water.addToBasket': 'Додати в кошик',
