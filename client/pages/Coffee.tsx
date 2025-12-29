@@ -920,7 +920,9 @@ export default function Coffee() {
                                 <div className="space-y-3">
                                   {cartItems.map((cartItem) => {
                                     // Extract size from variant (e.g., "250g - В зернах" -> "250g")
-                                    const variantSize = cartItem.variant?.split(' - ')[0] || '';
+                                    let variantSize = cartItem.variant?.split(' - ')[0] || '';
+                                    // Normalize: replace Cyrillic "г" with Latin "g" and remove spaces before "g"
+                                    variantSize = variantSize.replace(/г/g, 'g').replace(/\s+g/g, 'g').trim();
                                     return (
                                       <div 
                                         key={cartItem.id}
