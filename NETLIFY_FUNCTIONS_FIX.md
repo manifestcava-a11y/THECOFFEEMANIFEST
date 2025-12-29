@@ -152,3 +152,5 @@ curl "https://manifestcoffee.com.ua/.netlify/functions/api/settlements?cityName=
 
 
 
+
+

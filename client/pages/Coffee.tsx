@@ -708,24 +708,11 @@ export default function Coffee() {
                       to={`/product/${coffee.slug || coffee.id}`}
                       className="group bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 flex flex-col"
                       onClick={(e) => {
-                        // Check if click is on dropdown, button area, or SelectContent portal
                         const target = e.target as HTMLElement;
                         const isDropdownArea = target.closest('[data-dropdown-area]') !== null;
-                        // Check for Radix UI Select elements (portal content)
-                        const isSelectContent = target.closest('[role="listbox"]') !== null || 
-                                                target.closest('[data-radix-select-content]') !== null ||
-                                                target.closest('[data-radix-select-viewport]') !== null ||
-                                                target.closest('[data-radix-select-item]') !== null ||
-                                                target.hasAttribute('data-radix-select-item') ||
-                                                target.closest('[data-radix-portal]') !== null;
-                        // Also check if click originated from SelectTrigger or dropdown area
-                        const clickedElement = document.elementFromPoint(e.clientX, e.clientY);
-                        const isFromSelect = clickedElement?.closest('[data-radix-select-trigger]') !== null ||
-                                            clickedElement?.closest('[data-dropdown-area]') !== null ||
-                                            clickedElement?.closest('[role="listbox"]') !== null;
-                        if (isDropdownArea || isSelectContent || isFromSelect) {
+                        const isSelectContent = target.closest('[role="listbox"]') !== null;
+                        if (isDropdownArea || isSelectContent) {
                           e.preventDefault();
-                          e.stopPropagation();
                         }
                       }}
                     >
@@ -917,7 +904,7 @@ export default function Coffee() {
                             
                             if (isInCart) {
                               return (
-                                <div className="space-y-3">
+                                <div className="space-y-3" data-dropdown-area>
                                   {cartItems.map((cartItem) => {
                                     // Extract size from variant (e.g., "250 г - В зернах" -> "250 г")
                                     let variantSize = cartItem.variant?.split(' - ')[0] || '';
@@ -927,10 +914,6 @@ export default function Coffee() {
                                       <div 
                                         key={cartItem.id}
                                         className="flex flex-col items-center space-y-1"
-                                        onClick={(e) => {
-                                          e.preventDefault();
-                                          e.stopPropagation();
-                                        }}
                                       >
                                         <div className="flex items-center justify-center space-x-2">
                                           <button
@@ -968,78 +951,66 @@ export default function Coffee() {
                                     );
                                   })}
                                   {hasSizes && availableSizes.length > 1 && (
-                                    <div
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                      }}
-                                      onPointerDown={(e) => {
-                                        e.stopPropagation();
-                                      }}
-                                      onTouchStart={(e) => {
-                                        e.stopPropagation();
+                                    <Select
+                                      key={`add-size-${coffee.id}-${items.filter(i => i.productId === coffee.id).length}`}
+                                      value=""
+                                      onValueChange={(value) => {
+                                        const selectedSize = availableSizes.find((s: any) => s.id === value);
+                                        if (selectedSize) {
+                                          const sizePrice = selectedSize.price || coffee.price;
+                                          const sizeLabel = (language === 'ua' ? selectedSize.label_ua : selectedSize.label_ru) || (selectedSize.weight ? `${selectedSize.weight} г` : '');
+                                          
+                                          addItem({
+                                            productId: coffee.id,
+                                            name: coffee.name,
+                                            image: coffee.image,
+                                            price: sizePrice,
+                                            quantity: 1,
+                                            variant: `${sizeLabel} - ${t('product.grindBeans')}`,
+                                            type: 'coffee'
+                                          });
+                                          
+                                          toast({
+                                            title: t('coffee.addedToCart'),
+                                            description: `${coffee.name} (${sizeLabel}) ${t('coffee.addedToCartDesc')}`,
+                                            duration: 3000,
+                                          });
+                                        }
                                       }}
                                     >
-                                      <Select
-                                        key={`add-size-${coffee.id}-${items.filter(i => i.productId === coffee.id).length}`}
-                                        value=""
-                                        onValueChange={(value) => {
-                                          const selectedSize = availableSizes.find((s: any) => s.id === value);
-                                          if (selectedSize) {
-                                            const sizePrice = selectedSize.price || coffee.price;
-                                            const sizeLabel = (language === 'ua' ? selectedSize.label_ua : selectedSize.label_ru) || (selectedSize.weight ? `${selectedSize.weight} г` : '');
-                                            
-                                            addItem({
-                                              productId: coffee.id,
-                                              name: coffee.name,
-                                              image: coffee.image,
-                                              price: sizePrice,
-                                              quantity: 1,
-                                              variant: `${sizeLabel} - ${t('product.grindBeans')}`,
-                                              type: 'coffee'
-                                            });
-                                            
-                                            toast({
-                                              title: t('coffee.addedToCart'),
-                                              description: `${coffee.name} (${sizeLabel}) ${t('coffee.addedToCartDesc')}`,
-                                              duration: 3000,
-                                            });
-                                          }
+                                      <SelectTrigger 
+                                        className="w-full border-2 border-[#361c0c] bg-transparent text-[#361c0c] font-medium text-sm"
+                                      >
+                                        <SelectValue placeholder={t('coffee.addAnotherSize') || 'Додати інший розмір'} />
+                                      </SelectTrigger>
+                                      <SelectContent
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                        }}
+                                        onPointerDown={(e) => {
+                                          e.stopPropagation();
+                                        }}
+                                        onMouseDown={(e) => {
+                                          e.stopPropagation();
                                         }}
                                       >
-                                        <SelectTrigger 
-                                          className="w-full border-2 border-[#361c0c] bg-transparent text-[#361c0c] font-medium text-sm"
-                                        >
-                                          <SelectValue placeholder={t('coffee.addAnotherSize') || 'Додати інший розмір'} />
-                                        </SelectTrigger>
-                                        <SelectContent
-                                          onClick={(e) => {
-                                            e.stopPropagation();
-                                          }}
-                                          onPointerDown={(e) => {
-                                            e.stopPropagation();
-                                          }}
-                                          onMouseDown={(e) => {
-                                            e.stopPropagation();
-                                          }}
-                                        >
-                                          {availableSizes.map((size: any) => (
-                                            <SelectItem 
-                                              key={size.id} 
-                                              value={size.id}
-                                              onClick={(e) => {
-                                                e.stopPropagation();
-                                              }}
-                                              onPointerDown={(e) => {
-                                                e.stopPropagation();
-                                              }}
-                                            >
-                                              {language === 'ua' ? size.label_ua : size.label_ru || (size.weight ? `${size.weight} г` : '')}
-                                              {size.price ? ` - ₴${size.price}` : ''}
-                                            </SelectItem>
-                                          ))}
-                                        </SelectContent>
-                                      </Select>
-                                    </div>
+                                        {availableSizes.map((size: any) => (
+                                          <SelectItem 
+                                            key={size.id} 
+                                            value={size.id}
+                                            onClick={(e) => {
+                                              e.stopPropagation();
+                                            }}
+                                            onPointerDown={(e) => {
+                                              e.stopPropagation();
+                                            }}
+                                          >
+                                            {language === 'ua' ? size.label_ua : size.label_ru || (size.weight ? `${size.weight} г` : '')}
+                                            {size.price ? ` - ₴${size.price}` : ''}
+                                          </SelectItem>
+                                        ))}
+                                      </SelectContent>
+                                    </Select>
                                   )}
                                 </div>
                               );

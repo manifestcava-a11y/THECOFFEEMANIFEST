@@ -74,6 +74,31 @@ export function WaterProductsManager() {
     setProducts(updated);
   };
 
+  const addFeature = (pIdx: number, lang: 'ua' | 'ru') => {
+    const updated = [...products];
+    const field = lang === 'ua' ? 'features_ua' : 'features_ru';
+    const currentFeatures = updated[pIdx][field] || [];
+    updated[pIdx][field] = [...currentFeatures, ''];
+    setProducts(updated);
+  };
+
+  const removeFeature = (pIdx: number, lang: 'ua' | 'ru', featureIdx: number) => {
+    const updated = [...products];
+    const field = lang === 'ua' ? 'features_ua' : 'features_ru';
+    const currentFeatures = updated[pIdx][field] || [];
+    updated[pIdx][field] = currentFeatures.filter((_: any, idx: number) => idx !== featureIdx);
+    setProducts(updated);
+  };
+
+  const updateFeature = (pIdx: number, lang: 'ua' | 'ru', featureIdx: number, value: string) => {
+    const updated = [...products];
+    const field = lang === 'ua' ? 'features_ua' : 'features_ru';
+    const currentFeatures = [...(updated[pIdx][field] || [])];
+    currentFeatures[featureIdx] = value;
+    updated[pIdx][field] = currentFeatures;
+    setProducts(updated);
+  };
+
 
   const saveProduct = async (pIdx: number, event?: React.MouseEvent, suppressAlert: boolean = false) => {
     if (event) {
@@ -95,8 +120,12 @@ export function WaterProductsManager() {
       volume: p.volume,
       price: p.price,
       active: p.active,
-      features_ua: (p.features_ua || null) as any,
-      features_ru: (p.features_ru || null) as any,
+      features_ua: (p.features_ua || []).filter((f: string) => f.trim()).length > 0 
+        ? (p.features_ua || []).filter((f: string) => f.trim()) 
+        : null,
+      features_ru: (p.features_ru || []).filter((f: string) => f.trim()).length > 0 
+        ? (p.features_ru || []).filter((f: string) => f.trim()) 
+        : null,
     };
     
     let productId = p.id;
@@ -329,23 +358,84 @@ export function WaterProductsManager() {
                 </div>
               </div>
 
-              {/* Features */}
+              {/* Features UA */}
               <div>
-                <Label>Особливості (UA) - через крапку з комою (;)</Label>
-                <Input 
-                  value={(p.features_ua || []).join('; ')} 
-                  onChange={(e) => updateProductField(pIdx, 'features_ua', e.target.value.split(';').map(f => f.trim()).filter(f => f))} 
-                  placeholder="Природна вода; Без хімічних добавок; Висока якість"
-                />
+                <div className="flex items-center justify-between mb-2">
+                  <Label>Особливості (UA)</Label>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => addFeature(pIdx, 'ua')}
+                  >
+                    <Plus className="w-4 h-4 mr-1" />
+                    Додати
+                  </Button>
+                </div>
+                <div className="space-y-2">
+                  {(p.features_ua || []).map((feature, fIdx) => (
+                    <div key={fIdx} className="flex items-center gap-2">
+                      <Input
+                        value={feature}
+                        onChange={(e) => updateFeature(pIdx, 'ua', fIdx, e.target.value)}
+                        placeholder="Введіть особливість"
+                        className="flex-1"
+                      />
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => removeFeature(pIdx, 'ua', fIdx)}
+                        className="text-red-600 hover:text-red-700"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  ))}
+                  {(!p.features_ua || p.features_ua.length === 0) && (
+                    <p className="text-sm text-muted-foreground">Немає особливостей. Натисніть "Додати" щоб додати нову.</p>
+                  )}
+                </div>
               </div>
 
+              {/* Features RU */}
               <div>
-                <Label>Особливості (RU) - через крапку з комою (;)</Label>
-                <Input 
-                  value={(p.features_ru || []).join('; ')} 
-                  onChange={(e) => updateProductField(pIdx, 'features_ru', e.target.value.split(';').map(f => f.trim()).filter(f => f))} 
-                  placeholder="Природная вода; Без химических добавок; Высокое качество"
-                />
+                <div className="flex items-center justify-between mb-2">
+                  <Label>Особливості (RU)</Label>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => addFeature(pIdx, 'ru')}
+                  >
+                    <Plus className="w-4 h-4 mr-1" />
+                    Додати
+                  </Button>
+                </div>
+                <div className="space-y-2">
+                  {(p.features_ru || []).map((feature, fIdx) => (
+                    <div key={fIdx} className="flex items-center gap-2">
+                      <Input
+                        value={feature}
+                        onChange={(e) => updateFeature(pIdx, 'ru', fIdx, e.target.value)}
+                        placeholder="Введите особенность"
+                        className="flex-1"
+                      />
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => removeFeature(pIdx, 'ru', fIdx)}
+                        className="text-red-600 hover:text-red-700"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  ))}
+                  {(!p.features_ru || p.features_ru.length === 0) && (
+                    <p className="text-sm text-muted-foreground">Нет особенностей. Нажмите "Добавить" чтобы добавить новую.</p>
+                  )}
+                </div>
               </div>
 
 
