@@ -906,7 +906,7 @@ export default function Coffee() {
                             <span className="text-2xl font-black" style={{ color: '#361c0c' }}>
                               ₴{coffee.price}
                             </span>
-                            <span className="text-sm text-gray-500 ml-1">/ {coffee.weight}g</span>
+                            <span className="text-sm text-gray-500 ml-1">/ {coffee.weight} г</span>
                           </div>
                           
                           {(() => {
@@ -919,10 +919,10 @@ export default function Coffee() {
                               return (
                                 <div className="space-y-3">
                                   {cartItems.map((cartItem) => {
-                                    // Extract size from variant (e.g., "250g - В зернах" -> "250g")
+                                    // Extract size from variant (e.g., "250 г - В зернах" -> "250 г")
                                     let variantSize = cartItem.variant?.split(' - ')[0] || '';
-                                    // Normalize: replace Cyrillic "г" with Latin "g" and remove spaces before "g"
-                                    variantSize = variantSize.replace(/г/g, 'g').replace(/\s+g/g, 'g').trim();
+                                    // Normalize: ensure Cyrillic "г" with space before it
+                                    variantSize = variantSize.replace(/g/g, 'г').replace(/(\d+)г/g, '$1 г').trim();
                                     return (
                                       <div 
                                         key={cartItem.id}
@@ -986,7 +986,7 @@ export default function Coffee() {
                                           const selectedSize = availableSizes.find((s: any) => s.id === value);
                                           if (selectedSize) {
                                             const sizePrice = selectedSize.price || coffee.price;
-                                            const sizeLabel = (language === 'ua' ? selectedSize.label_ua : selectedSize.label_ru) || (selectedSize.weight ? `${selectedSize.weight}g` : '');
+                                            const sizeLabel = (language === 'ua' ? selectedSize.label_ua : selectedSize.label_ru) || (selectedSize.weight ? `${selectedSize.weight} г` : '');
                                             
                                             addItem({
                                               productId: coffee.id,
@@ -1033,7 +1033,7 @@ export default function Coffee() {
                                                 e.stopPropagation();
                                               }}
                                             >
-                                              {language === 'ua' ? size.label_ua : size.label_ru || (size.weight ? `${size.weight}g` : '')}
+                                              {language === 'ua' ? size.label_ua : size.label_ru || (size.weight ? `${size.weight} г` : '')}
                                               {size.price ? ` - ₴${size.price}` : ''}
                                             </SelectItem>
                                           ))}
@@ -1099,10 +1099,10 @@ export default function Coffee() {
                                       e.stopPropagation();
                                       const sizePrice = selectedSize?.price || coffee.price;
                                       const sizeLabel = selectedSize 
-                                        ? (language === 'ua' ? selectedSize.label_ua : selectedSize.label_ru) || (selectedSize.weight ? `${selectedSize.weight}g` : '')
+                                        ? (language === 'ua' ? selectedSize.label_ua : selectedSize.label_ru) || (selectedSize.weight ? `${selectedSize.weight} г` : '')
                                         : (() => {
                                             const weightLabel = getWeightString(coffee.weight ?? null, '');
-                                            return weightLabel || '250g';
+                                            return weightLabel || '250 г';
                                           })();
                                       
                                       addItem({

@@ -23,7 +23,7 @@ export function getWeightString(
     if (Number.isNaN(grams) || grams <= 0) {
       return defaultValue;
     }
-    return `${grams}g`;
+    return `${grams} г`;
   }
 
   const raw = String(input).trim();
@@ -40,7 +40,7 @@ export function getWeightString(
   if (kgMatch) {
     const kg = parseFloat(kgMatch[1]);
     if (!Number.isNaN(kg)) {
-      return `${Math.round(kg * 1000)}g`;
+      return `${Math.round(kg * 1000)} г`;
     }
   }
 
@@ -48,7 +48,7 @@ export function getWeightString(
   if (gMatch) {
     const grams = parseFloat(gMatch[1]);
     if (!Number.isNaN(grams)) {
-      return `${Math.round(grams)}g`;
+      return `${Math.round(grams)} г`;
     }
   }
 
@@ -57,16 +57,16 @@ export function getWeightString(
     const value = parseFloat(numberMatch[1]);
     if (!Number.isNaN(value)) {
       if (normalized.includes('kg') || (value <= 5 && normalized.includes('0.'))) {
-        return `${Math.round(value * 1000)}g`;
+        return `${Math.round(value * 1000)} г`;
       }
       if (value >= 10) {
-        return `${Math.round(value)}g`;
+        return `${Math.round(value)} г`;
       }
     }
   }
 
   if (/^\d+$/.test(raw)) {
-    return `${raw}g`;
+    return `${raw} г`;
   }
 
   return defaultValue;
@@ -94,6 +94,8 @@ export function getWeightDescriptor(label: string | null | undefined, baseWeight
 
   return cleaned;
 }
+
+
 
 
 
