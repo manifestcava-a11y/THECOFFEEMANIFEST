@@ -702,10 +702,22 @@ export default function Coffee() {
                       to={`/product/${coffee.slug || coffee.id}`}
                       className="group bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 flex flex-col"
                       onClick={(e) => {
-                        // Check if click is on dropdown or button area
+                        // Check if click is on dropdown, button area, or SelectContent portal
                         const target = e.target as HTMLElement;
                         const isDropdownArea = target.closest('[data-dropdown-area]') !== null;
-                        if (isDropdownArea) {
+                        // Check for Radix UI Select elements (portal content)
+                        const isSelectContent = target.closest('[role="listbox"]') !== null || 
+                                                target.closest('[data-radix-select-content]') !== null ||
+                                                target.closest('[data-radix-select-viewport]') !== null ||
+                                                target.closest('[data-radix-select-item]') !== null ||
+                                                target.hasAttribute('data-radix-select-item') ||
+                                                target.closest('[data-radix-portal]') !== null;
+                        // Also check if click originated from SelectTrigger or dropdown area
+                        const clickedElement = document.elementFromPoint(e.clientX, e.clientY);
+                        const isFromSelect = clickedElement?.closest('[data-radix-select-trigger]') !== null ||
+                                            clickedElement?.closest('[data-dropdown-area]') !== null ||
+                                            clickedElement?.closest('[role="listbox"]') !== null;
+                        if (isDropdownArea || isSelectContent || isFromSelect) {
                           e.preventDefault();
                           e.stopPropagation();
                         }
@@ -949,11 +961,30 @@ export default function Coffee() {
                                       >
                                         <SelectValue placeholder={t('coffee.selectSize') || 'Виберіть вагу'} />
                                       </SelectTrigger>
-                                      <SelectContent>
+                                      <SelectContent
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                        }}
+                                        onPointerDown={(e) => {
+                                          e.stopPropagation();
+                                        }}
+                                        onMouseDown={(e) => {
+                                          e.stopPropagation();
+                                        }}
+                                      >
                                         {availableSizes.map((size: any) => (
-                                          <SelectItem key={size.id} value={size.id}>
+                                          <SelectItem 
+                                            key={size.id} 
+                                            value={size.id}
+                                            onClick={(e) => {
+                                              e.stopPropagation();
+                                            }}
+                                            onPointerDown={(e) => {
+                                              e.stopPropagation();
+                                            }}
+                                          >
                                             {language === 'ua' ? size.label_ua : size.label_ru || (size.weight ? `${size.weight}g` : '')}
-                                            {size.price && size.price !== coffee.price && ` - ₴${size.price}`}
+                                            {size.price ? ` - ₴${size.price}` : ''}
                                           </SelectItem>
                                         ))}
                                       </SelectContent>
