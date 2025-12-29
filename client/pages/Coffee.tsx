@@ -888,7 +888,13 @@ export default function Coffee() {
                             
                             if (isInCart) {
                               return (
-                                <div className="flex items-center justify-center space-x-2">
+                                <div 
+                                  className="flex items-center justify-center space-x-2"
+                                  onClick={(e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                  }}
+                                >
                                   <button
                                     onClick={(e) => {
                                       e.preventDefault();
@@ -921,7 +927,13 @@ export default function Coffee() {
                               const selectedSize = availableSizes.find((s: any) => s.id === selectedSizeId);
                               
                               return (
-                                <div className="space-y-3">
+                                <div 
+                                  className="space-y-3"
+                                  onClick={(e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                  }}
+                                >
                                   {hasSizes && (
                                     <Select
                                       value={selectedSizeId || ''}
@@ -929,7 +941,13 @@ export default function Coffee() {
                                         setSelectedSizes(prev => ({ ...prev, [coffee.id]: value }));
                                       }}
                                     >
-                                      <SelectTrigger className="w-full border-2 border-[#361c0c] bg-transparent text-[#361c0c] font-medium">
+                                      <SelectTrigger 
+                                        className="w-full border-2 border-[#361c0c] bg-transparent text-[#361c0c] font-medium"
+                                        onClick={(e) => {
+                                          e.preventDefault();
+                                          e.stopPropagation();
+                                        }}
+                                      >
                                         <SelectValue placeholder={t('coffee.selectSize') || 'Виберіть вагу'} />
                                       </SelectTrigger>
                                       <SelectContent>

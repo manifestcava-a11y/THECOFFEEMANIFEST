@@ -145,7 +145,23 @@ export default function Header() {
             </div>
 
             {/* Mobile Header Actions */}
-            <div className="lg:hidden flex items-center space-x-4">
+            <div className="lg:hidden flex items-center space-x-2">
+              {/* Mobile Basket Button */}
+              <Link 
+                to="/basket" 
+                className="relative p-3 transition-all duration-300"
+                style={{ backgroundColor: '#fcf4e4' + '20' }}
+              >
+                <ShoppingCart className="w-6 h-6" style={{ color: '#fcf4e4' }} />
+                {totalQuantity > 0 && (
+                  <span
+                    className="absolute -top-1 -right-1 flex items-center justify-center rounded-full text-xs font-black leading-none"
+                    style={{ backgroundColor: '#fcf4e4', color: '#361c0c', width: '1rem', height: '1rem' }}
+                  >
+                    {totalQuantity}
+                  </span>
+                )}
+              </Link>
               {/* Mobile Menu Button - Clean */}
               <button 
                 className="p-3 transition-all duration-300"
