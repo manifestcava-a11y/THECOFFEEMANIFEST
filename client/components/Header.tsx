@@ -205,31 +205,31 @@ export default function Header() {
               </Link>
               <div className="px-6 pt-24 pb-8 space-y-8">
               <nav className="space-y-6">
-                <Link to="/coffee" className="block text-white font-bold text-2xl hover:text-white/80 transition-colors">
+                <Link to="/coffee" className="block text-white font-bold text-2xl">
                   {t('nav.coffee')}
                 </Link>
-                <Link to="/water" className="block text-white font-bold text-2xl hover:text-white/80 transition-colors">
+                <Link to="/water" className="block text-white font-bold text-2xl">
                   {t('nav.water')}
                 </Link>
-                <Link to="/office" className="block text-white font-bold text-2xl hover:text-white/80 transition-colors">
+                <Link to="/office" className="block text-white font-bold text-2xl">
                   {t('nav.office')}
                 </Link>
-                {/* <a href="#drinks" className="block text-white font-bold text-2xl hover:text-white/80 transition-colors">
+                {/* <a href="#drinks" className="block text-white font-bold text-2xl">
                   {t('nav.drinks')}
                 </a> */}
-                <Link to="/news" className="block text-white font-bold text-2xl hover:text-white/80 transition-colors">
+                <Link to="/news" className="block text-white font-bold text-2xl">
                   {t('nav.news')}
                 </Link>
-                <Link to="/contact" className="block text-white font-bold text-2xl hover:text-white/80 transition-colors">
+                <Link to="/contact" className="block text-white font-bold text-2xl">
                   {t('nav.contacts')}
                 </Link>
-                <Link to="/delivery" className="block text-white font-bold text-2xl hover:text-white/80 transition-colors">
+                <Link to="/delivery" className="block text-white font-bold text-2xl">
                   {language === 'ru' ? 'Доставка и оплата' : 'Доставка та оплата'}
                 </Link>
-                <Link to="/terms" className="block text-white font-bold text-2xl hover:text-white/80 transition-colors">
+                <Link to="/terms" className="block text-white font-bold text-2xl">
                   {language === 'ru' ? 'Условия использования' : 'Умови використання'}
                 </Link>
-                <Link to="/returns" className="block text-white font-bold text-2xl hover:text-white/80 transition-colors">
+                <Link to="/returns" className="block text-white font-bold text-2xl">
                   {language === 'ru' ? 'Политика возврата' : 'Політика повернення'}
                 </Link>
               </nav>
@@ -239,7 +239,7 @@ export default function Header() {
             
             {/* Close button in top right of sliding panel */}
             <button 
-              className={`absolute top-6 right-6 w-12 h-12 flex items-center justify-center hover:scale-110 transition-all duration-300 z-50 ${isMobileMenuOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+              className={`absolute top-6 right-6 w-12 h-12 flex items-center justify-center z-50 ${isMobileMenuOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
               style={{ backgroundColor: '#fcf4e4' + '20' }}
               onClick={() => setIsMobileMenuOpen(false)}
             >
