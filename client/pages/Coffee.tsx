@@ -357,8 +357,13 @@ export default function Coffee() {
     return items.find(item => item.productId === productId);
   };
 
-  const handleQuantityChange = (productId: string, change: number) => {
-    const cartItem = getCartItemForProduct(productId);
+  const getCartItemsForProduct = (productId: string) => {
+    return items.filter(item => item.productId === productId);
+  };
+
+  const handleQuantityChange = (itemIdOrProductId: string, change: number) => {
+    // Check if it's a cart item ID (contains |) or product ID
+    const cartItem = items.find(item => item.id === itemIdOrProductId) || getCartItemForProduct(itemIdOrProductId);
     if (cartItem) {
       const newQuantity = cartItem.quantity + change;
       if (newQuantity <= 0) {
@@ -905,45 +910,61 @@ export default function Coffee() {
                           </div>
                           
                           {(() => {
-                            const cartItem = getCartItemForProduct(coffee.id);
-                            const isInCart = cartItem && cartItem.quantity > 0;
+                            const cartItems = getCartItemsForProduct(coffee.id);
+                            const isInCart = cartItems.length > 0;
                             const availableSizes = (coffee as any).sizes || [];
                             const hasSizes = availableSizes.length > 0;
                             
                             if (isInCart) {
                               return (
                                 <div className="space-y-3">
-                                  <div 
-                                    className="flex items-center justify-center space-x-2"
-                                    onClick={(e) => {
-                                      e.preventDefault();
-                                      e.stopPropagation();
-                                    }}
-                                  >
-                                    <button
-                                      onClick={(e) => {
-                                        e.preventDefault();
-                                        e.stopPropagation();
-                                        handleQuantityChange(coffee.id, -1);
-                                      }}
-                                      className="w-8 h-8 flex items-center justify-center border-2 border-[#361c0c] text-[#361c0c] hover:bg-[#361c0c] hover:text-white transition-all duration-300"
-                                    >
-                                      <Minus className="w-4 h-4" />
-                                    </button>
-                                    <div className="w-12 text-center font-black text-lg" style={{ color: '#361c0c' }}>
-                                      {cartItem!.quantity}
-                                    </div>
-                                    <button
-                                      onClick={(e) => {
-                                        e.preventDefault();
-                                        e.stopPropagation();
-                                        handleQuantityChange(coffee.id, 1);
-                                      }}
-                                      className="w-8 h-8 flex items-center justify-center border-2 border-[#361c0c] text-[#361c0c] hover:bg-[#361c0c] hover:text-white transition-all duration-300"
-                                    >
-                                      <Plus className="w-4 h-4" />
-                                    </button>
-                                  </div>
+                                  {cartItems.map((cartItem) => {
+                                    // Extract size from variant (e.g., "250g - В зернах" -> "250g")
+                                    const variantSize = cartItem.variant?.split(' - ')[0] || '';
+                                    return (
+                                      <div 
+                                        key={cartItem.id}
+                                        className="flex flex-col items-center space-y-1"
+                                        onClick={(e) => {
+                                          e.preventDefault();
+                                          e.stopPropagation();
+                                        }}
+                                      >
+                                        <div className="flex items-center justify-center space-x-2">
+                                          <button
+                                            onClick={(e) => {
+                                              e.preventDefault();
+                                              e.stopPropagation();
+                                              handleQuantityChange(cartItem.id, -1);
+                                            }}
+                                            className="w-8 h-8 flex items-center justify-center border-2 border-[#361c0c] text-[#361c0c] hover:bg-[#361c0c] hover:text-white transition-all duration-300"
+                                          >
+                                            <Minus className="w-4 h-4" />
+                                          </button>
+                                          <div className="flex flex-col items-center min-w-[60px]">
+                                            <div className="text-center font-black text-lg" style={{ color: '#361c0c' }}>
+                                              {cartItem.quantity}
+                                            </div>
+                                            {variantSize && (
+                                              <div className="text-xs text-gray-600 font-medium">
+                                                {variantSize}
+                                              </div>
+                                            )}
+                                          </div>
+                                          <button
+                                            onClick={(e) => {
+                                              e.preventDefault();
+                                              e.stopPropagation();
+                                              handleQuantityChange(cartItem.id, 1);
+                                            }}
+                                            className="w-8 h-8 flex items-center justify-center border-2 border-[#361c0c] text-[#361c0c] hover:bg-[#361c0c] hover:text-white transition-all duration-300"
+                                          >
+                                            <Plus className="w-4 h-4" />
+                                          </button>
+                                        </div>
+                                      </div>
+                                    );
+                                  })}
                                   {hasSizes && availableSizes.length > 1 && (
                                     <div
                                       onClick={(e) => {
@@ -957,7 +978,8 @@ export default function Coffee() {
                                       }}
                                     >
                                       <Select
-                                        value={selectedSizes[coffee.id] || ''}
+                                        key={`add-size-${coffee.id}-${items.filter(i => i.productId === coffee.id).length}`}
+                                        value=""
                                         onValueChange={(value) => {
                                           const selectedSize = availableSizes.find((s: any) => s.id === value);
                                           if (selectedSize) {
@@ -979,8 +1001,6 @@ export default function Coffee() {
                                               description: `${coffee.name} (${sizeLabel}) ${t('coffee.addedToCartDesc')}`,
                                               duration: 3000,
                                             });
-                                            
-                                            setSelectedSizes(prev => ({ ...prev, [coffee.id]: '' }));
                                           }
                                         }}
                                       >
