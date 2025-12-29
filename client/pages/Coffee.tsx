@@ -342,6 +342,7 @@ export default function Coffee() {
   const [modalOpen, setModalOpen] = useState(false);
   const [addedItem, setAddedItem] = useState<{name: string, image?: string, quantity: number} | null>(null);
   const [selectedSizes, setSelectedSizes] = useState<Record<string, string>>({});
+  const [showAddSizeDropdown, setShowAddSizeDropdown] = useState<Record<string, boolean>>({});
 
   // Check if user has seen the modal before
   const hasSeenModal = () => {
@@ -906,39 +907,118 @@ export default function Coffee() {
                           {(() => {
                             const cartItem = getCartItemForProduct(coffee.id);
                             const isInCart = cartItem && cartItem.quantity > 0;
+                            const availableSizes = (coffee as any).sizes || [];
+                            const hasSizes = availableSizes.length > 0;
                             
                             if (isInCart) {
                               return (
-                                <div 
-                                  className="flex items-center justify-center space-x-2"
-                                  onClick={(e) => {
-                                    e.preventDefault();
-                                    e.stopPropagation();
-                                  }}
-                                >
-                                  <button
+                                <div className="space-y-3">
+                                  <div 
+                                    className="flex items-center justify-center space-x-2"
                                     onClick={(e) => {
                                       e.preventDefault();
                                       e.stopPropagation();
-                                      handleQuantityChange(coffee.id, -1);
                                     }}
-                                    className="w-8 h-8 flex items-center justify-center border-2 border-[#361c0c] text-[#361c0c] hover:bg-[#361c0c] hover:text-white transition-all duration-300"
                                   >
-                                    <Minus className="w-4 h-4" />
-                                  </button>
-                                  <div className="w-12 text-center font-black text-lg" style={{ color: '#361c0c' }}>
-                                    {cartItem!.quantity}
+                                    <button
+                                      onClick={(e) => {
+                                        e.preventDefault();
+                                        e.stopPropagation();
+                                        handleQuantityChange(coffee.id, -1);
+                                      }}
+                                      className="w-8 h-8 flex items-center justify-center border-2 border-[#361c0c] text-[#361c0c] hover:bg-[#361c0c] hover:text-white transition-all duration-300"
+                                    >
+                                      <Minus className="w-4 h-4" />
+                                    </button>
+                                    <div className="w-12 text-center font-black text-lg" style={{ color: '#361c0c' }}>
+                                      {cartItem!.quantity}
+                                    </div>
+                                    <button
+                                      onClick={(e) => {
+                                        e.preventDefault();
+                                        e.stopPropagation();
+                                        handleQuantityChange(coffee.id, 1);
+                                      }}
+                                      className="w-8 h-8 flex items-center justify-center border-2 border-[#361c0c] text-[#361c0c] hover:bg-[#361c0c] hover:text-white transition-all duration-300"
+                                    >
+                                      <Plus className="w-4 h-4" />
+                                    </button>
                                   </div>
-                                  <button
-                                    onClick={(e) => {
-                                      e.preventDefault();
-                                      e.stopPropagation();
-                                      handleQuantityChange(coffee.id, 1);
-                                    }}
-                                    className="w-8 h-8 flex items-center justify-center border-2 border-[#361c0c] text-[#361c0c] hover:bg-[#361c0c] hover:text-white transition-all duration-300"
-                                  >
-                                    <Plus className="w-4 h-4" />
-                                  </button>
+                                  {hasSizes && availableSizes.length > 1 && (
+                                    <div
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                      }}
+                                      onPointerDown={(e) => {
+                                        e.stopPropagation();
+                                      }}
+                                      onTouchStart={(e) => {
+                                        e.stopPropagation();
+                                      }}
+                                    >
+                                      <Select
+                                        value={selectedSizes[coffee.id] || ''}
+                                        onValueChange={(value) => {
+                                          const selectedSize = availableSizes.find((s: any) => s.id === value);
+                                          if (selectedSize) {
+                                            const sizePrice = selectedSize.price || coffee.price;
+                                            const sizeLabel = (language === 'ua' ? selectedSize.label_ua : selectedSize.label_ru) || (selectedSize.weight ? `${selectedSize.weight}g` : '');
+                                            
+                                            addItem({
+                                              productId: coffee.id,
+                                              name: coffee.name,
+                                              image: coffee.image,
+                                              price: sizePrice,
+                                              quantity: 1,
+                                              variant: `${sizeLabel} - ${t('product.grindBeans')}`,
+                                              type: 'coffee'
+                                            });
+                                            
+                                            toast({
+                                              title: t('coffee.addedToCart'),
+                                              description: `${coffee.name} (${sizeLabel}) ${t('coffee.addedToCartDesc')}`,
+                                              duration: 3000,
+                                            });
+                                            
+                                            setSelectedSizes(prev => ({ ...prev, [coffee.id]: '' }));
+                                          }
+                                        }}
+                                      >
+                                        <SelectTrigger 
+                                          className="w-full border-2 border-[#361c0c] bg-transparent text-[#361c0c] font-medium text-sm"
+                                        >
+                                          <SelectValue placeholder={t('coffee.addAnotherSize') || 'Додати інший розмір'} />
+                                        </SelectTrigger>
+                                        <SelectContent
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                          }}
+                                          onPointerDown={(e) => {
+                                            e.stopPropagation();
+                                          }}
+                                          onMouseDown={(e) => {
+                                            e.stopPropagation();
+                                          }}
+                                        >
+                                          {availableSizes.map((size: any) => (
+                                            <SelectItem 
+                                              key={size.id} 
+                                              value={size.id}
+                                              onClick={(e) => {
+                                                e.stopPropagation();
+                                              }}
+                                              onPointerDown={(e) => {
+                                                e.stopPropagation();
+                                              }}
+                                            >
+                                              {language === 'ua' ? size.label_ua : size.label_ru || (size.weight ? `${size.weight}g` : '')}
+                                              {size.price ? ` - ₴${size.price}` : ''}
+                                            </SelectItem>
+                                          ))}
+                                        </SelectContent>
+                                      </Select>
+                                    </div>
+                                  )}
                                 </div>
                               );
                             } else {
