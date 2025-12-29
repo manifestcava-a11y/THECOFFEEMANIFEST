@@ -341,6 +341,7 @@ export default function Coffee() {
   const { data: filterOptions } = useFilterOptions(language);
   const [modalOpen, setModalOpen] = useState(false);
   const [addedItem, setAddedItem] = useState<{name: string, image?: string, quantity: number} | null>(null);
+  const [selectedSizes, setSelectedSizes] = useState<Record<string, string>>({});
 
   // Check if user has seen the modal before
   const hasSeenModal = () => {
@@ -914,48 +915,80 @@ export default function Coffee() {
                                 </div>
                               );
                             } else {
+                              const availableSizes = (coffee as any).sizes || [];
+                              const hasSizes = availableSizes.length > 0;
+                              const selectedSizeId = selectedSizes[coffee.id];
+                              const selectedSize = availableSizes.find((s: any) => s.id === selectedSizeId);
+                              
                               return (
-                                <Button
-                                  disabled={!coffee.inStock}
-                                  onClick={(e) => {
-                                    e.preventDefault();
-                                    e.stopPropagation();
-                                    addItem({
-                                      productId: coffee.id,
-                                      name: coffee.name,
-                                      image: coffee.image,
-                                      price: coffee.price,
-                                      quantity: 1,
-                                      variant: `${(() => {
-                                        const weightLabel = getWeightString(coffee.weight ?? null, '');
-                                        return weightLabel || '250g';
-                                      })()} - ${t('product.grindBeans')}`, // Default to beans if not selected
-                                      type: 'coffee'
-                                    });
-                                    
-                                    // Show toast notification
-                                    toast({
-                                      title: t('coffee.addedToCart'),
-                                      description: `${coffee.name} ${t('coffee.addedToCartDesc')}`,
-                                      duration: 3000,
-                                    });
-                                    
-                                    // Only show modal if user hasn't seen it before
-                                    if (!hasSeenModal()) {
-                                      setAddedItem({
+                                <div className="space-y-3">
+                                  {hasSizes && (
+                                    <Select
+                                      value={selectedSizeId || ''}
+                                      onValueChange={(value) => {
+                                        setSelectedSizes(prev => ({ ...prev, [coffee.id]: value }));
+                                      }}
+                                    >
+                                      <SelectTrigger className="w-full border-2 border-[#361c0c] bg-transparent text-[#361c0c] font-medium">
+                                        <SelectValue placeholder={t('coffee.selectSize') || 'Виберіть вагу'} />
+                                      </SelectTrigger>
+                                      <SelectContent>
+                                        {availableSizes.map((size: any) => (
+                                          <SelectItem key={size.id} value={size.id}>
+                                            {language === 'ua' ? size.label_ua : size.label_ru || (size.weight ? `${size.weight}g` : '')}
+                                            {size.price && size.price !== coffee.price && ` - ₴${size.price}`}
+                                          </SelectItem>
+                                        ))}
+                                      </SelectContent>
+                                    </Select>
+                                  )}
+                                  <Button
+                                    disabled={!coffee.inStock || (hasSizes && !selectedSizeId)}
+                                    onClick={(e) => {
+                                      e.preventDefault();
+                                      e.stopPropagation();
+                                      const sizePrice = selectedSize?.price || coffee.price;
+                                      const sizeLabel = selectedSize 
+                                        ? (language === 'ua' ? selectedSize.label_ua : selectedSize.label_ru) || (selectedSize.weight ? `${selectedSize.weight}g` : '')
+                                        : (() => {
+                                            const weightLabel = getWeightString(coffee.weight ?? null, '');
+                                            return weightLabel || '250g';
+                                          })();
+                                      
+                                      addItem({
+                                        productId: coffee.id,
                                         name: coffee.name,
                                         image: coffee.image,
-                                        quantity: 1
+                                        price: sizePrice,
+                                        quantity: 1,
+                                        variant: `${sizeLabel} - ${t('product.grindBeans')}`, // Default to beans if not selected
+                                        type: 'coffee'
                                       });
-                                      setModalOpen(true);
-                                      markModalAsSeen();
-                                    }
-                                  }}
-                                  className="w-full px-6 py-3 bg-transparent border-2 font-black text-sm text-[#361c0c] border-[#361c0c] hover:bg-[#361c0c] hover:text-white transition-all duration-300"
-                                >
-                                  <ShoppingCart className="w-4 h-4 mr-2" />
-                                  {coffee.inStock ? t('coffee.addToCart') : t('coffee.outOfStock')}
-                                </Button>
+                                      
+                                      // Show toast notification
+                                      toast({
+                                        title: t('coffee.addedToCart'),
+                                        description: `${coffee.name} ${t('coffee.addedToCartDesc')}`,
+                                        duration: 3000,
+                                      });
+                                      
+                                      // Only show modal if user hasn't seen it before
+                                      if (!hasSeenModal()) {
+                                        setAddedItem({
+                                          name: coffee.name,
+                                          image: coffee.image,
+                                          quantity: 1
+                                        });
+                                        setModalOpen(true);
+                                        markModalAsSeen();
+                                      }
+                                    }}
+                                    className="w-full px-6 py-3 bg-transparent border-2 font-black text-sm text-[#361c0c] border-[#361c0c] hover:bg-[#361c0c] hover:text-white transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                                  >
+                                    <ShoppingCart className="w-4 h-4 mr-2" />
+                                    {coffee.inStock ? t('coffee.addToCart') : t('coffee.outOfStock')}
+                                  </Button>
+                                </div>
                               );
                             }
                           })()}

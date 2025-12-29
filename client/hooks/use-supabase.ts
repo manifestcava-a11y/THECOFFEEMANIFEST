@@ -745,6 +745,19 @@ export function useCoffeeProducts() {
         const body = mapLevelToString(p.body_level, 'light', 'medium', 'full');
         const rawProcess = (p.process || '').trim();
         const processDisplay = translateProcessValue(rawProcess, language === 'ru' ? 'ru' : 'ua') || rawProcess;
+        const mappedSizes = sizes
+          .filter((s: DBCoffeeSize) => s.enabled !== false)
+          .sort((a: DBCoffeeSize, b: DBCoffeeSize) => (a.sort || 0) - (b.sort || 0))
+          .map((s: DBCoffeeSize) => ({
+            id: String(s.id),
+            label_ua: s.label_ua || (s.weight ? `${s.weight}g` : ''),
+            label_ru: s.label_ru || (s.weight ? `${s.weight}g` : ''),
+            weight: s.weight || null,
+            price: s.price || 0,
+            image_url: s.image_url || null,
+            special: s.special || false,
+          }));
+        
         const mappedProduct = {
           id: String(p.id),
           slug: p.slug || String(p.id),
@@ -777,6 +790,7 @@ export function useCoffeeProducts() {
           label_image_url: p.label_image_url || null,
           seo_keywords_ua: p.seo_keywords_ua || null,
           seo_keywords_ru: p.seo_keywords_ru || null,
+          sizes: mappedSizes,
         };
         return mappedProduct;
       });

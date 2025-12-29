@@ -99,6 +99,7 @@ const translations = {
     'coffee.found': 'кави знайдено',
     'coffee.addToCart': 'Додати в кошик',
     'coffee.outOfStock': 'Немає в наявності',
+    'coffee.selectSize': 'Виберіть вагу',
     'coffee.noCoffeeFound': 'Каву не знайдено',
     'coffee.tryAdjustingFilters': 'Спробуйте налаштувати фільтри для отримання більшої кількості результатів',
     'coffee.strength': 'Міцність',
@@ -262,6 +263,7 @@ const translations = {
     // Water Page
     'water.title': 'ВОДА',
     'water.chooseSize': 'Оберіть необхідну кількість для ваших потреб',
+    'water.selectSize': 'Виберіть об\'єм',
     'water.popular': 'Популярний',
     'water.features': 'Особливості:',
     'water.addToBasket': 'Додати в кошик',
@@ -481,6 +483,7 @@ const translations = {
     'coffee.found': 'кофе найдено',
     'coffee.addToCart': 'Добавить в корзину',
     'coffee.outOfStock': 'Нет в наличии',
+    'coffee.selectSize': 'Выберите вес',
     'coffee.noCoffeeFound': 'Кофе не найдено',
     'coffee.tryAdjustingFilters': 'Попробуйте настроить фильтры для получения большего количества результатов',
     'coffee.strength': 'Крепость',
@@ -644,6 +647,7 @@ const translations = {
     // Water Page
     'water.title': 'ВОДА',
     'water.chooseSize': 'Выберите идеальный размер для ваших потребностей',
+    'water.selectSize': 'Выберите объем',
     'water.popular': 'Популярный',
     'water.features': 'Особенности:',
     'water.addToBasket': 'Добавить в корзину',

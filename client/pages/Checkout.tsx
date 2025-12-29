@@ -62,6 +62,11 @@ export default function Checkout() {
   const [showCityDropdown, setShowCityDropdown] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // Helper function to allow only numbers
+  const handleNumberInput = (value: string): string => {
+    return value.replace(/\D/g, '');
+  };
+
   // Format shipping address based on shipping method
   const formatShippingAddress = (): string => {
     let addr = city || '';
@@ -730,7 +735,7 @@ export default function Checkout() {
             <div className="md:col-span-2">
               <div className="font-bold mb-2" style={{ color: '#361c0c' }}>{t('checkout.contactInfo')}</div>
               <Input placeholder={t('checkout.fullName')} value={fullName} onChange={e => setFullName(e.target.value)} className="mb-3" />
-              <Input placeholder={t('checkout.phone')} value={phone} onChange={e => setPhone(e.target.value)} className="mb-3" />
+              <Input placeholder={t('checkout.phone')} value={phone} onChange={e => setPhone(handleNumberInput(e.target.value))} className="mb-3" />
               <Input placeholder={t('checkout.email')} type="email" value={email} onChange={e => setEmail(e.target.value)} className="mb-3" />
             </div>
 
@@ -883,7 +888,7 @@ export default function Checkout() {
                                 placeholder={t('checkout.manualEntryPlaceholder')}
                                 value={manualWarehouseValue}
                                 onChange={(e) => {
-                                  const value = e.target.value;
+                                  const value = handleNumberInput(e.target.value);
                                   setManualWarehouseValue(value);
                                   setDepartment(value.trim());
                                 }}
