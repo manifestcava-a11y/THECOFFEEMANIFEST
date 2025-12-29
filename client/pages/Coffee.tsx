@@ -701,6 +701,15 @@ export default function Coffee() {
                       key={coffee.id} 
                       to={`/product/${coffee.slug || coffee.id}`}
                       className="group bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 flex flex-col"
+                      onClick={(e) => {
+                        // Check if click is on dropdown or button area
+                        const target = e.target as HTMLElement;
+                        const isDropdownArea = target.closest('[data-dropdown-area]') !== null;
+                        if (isDropdownArea) {
+                          e.preventDefault();
+                          e.stopPropagation();
+                        }
+                      }}
                     >
                       {/* Image */}
                       <div className="relative aspect-[4/5] overflow-hidden" style={{ backgroundColor: '#fcf4e4' }}>
@@ -927,13 +936,7 @@ export default function Coffee() {
                               const selectedSize = availableSizes.find((s: any) => s.id === selectedSizeId);
                               
                               return (
-                                <div 
-                                  className="space-y-3"
-                                  onClick={(e) => {
-                                    e.preventDefault();
-                                    e.stopPropagation();
-                                  }}
-                                >
+                                <div className="space-y-3" data-dropdown-area>
                                   {hasSizes && (
                                     <Select
                                       value={selectedSizeId || ''}
@@ -943,10 +946,6 @@ export default function Coffee() {
                                     >
                                       <SelectTrigger 
                                         className="w-full border-2 border-[#361c0c] bg-transparent text-[#361c0c] font-medium"
-                                        onClick={(e) => {
-                                          e.preventDefault();
-                                          e.stopPropagation();
-                                        }}
                                       >
                                         <SelectValue placeholder={t('coffee.selectSize') || 'Виберіть вагу'} />
                                       </SelectTrigger>
