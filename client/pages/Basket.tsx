@@ -54,15 +54,35 @@ export default function Basket() {
       });
     }
 
-    // Push purchase event to dataLayer (once)
-    if (purchaseData && typeof window !== "undefined") {
-      window.dataLayer = window.dataLayer || [];
-      window.dataLayer.push({
-        event: 'purchase',
-        transaction_id: purchaseData.orderId,
-        value: purchaseData.value,
-        currency: purchaseData.currency || 'UAH',
-      });
+    // For LiqPay: Check if payment was actually confirmed (same logic as email trigger)
+    // Only fire purchase event if order exists with status "completed" (payment confirmed)
+    if (purchaseData?.orderId) {
+      // Check order status in database - same check as email trigger
+      supabase
+        .from("orders")
+        .select("id, status, order_id")
+        .eq("order_id", purchaseData.orderId)
+        .eq("status", "completed")
+        .single()
+        .then(({ data: order, error }) => {
+          // Only fire purchase event if order exists and is completed (payment confirmed)
+          // This matches exactly when emails are sent in liqpay-callback.ts
+          if (order && !error && typeof window !== "undefined") {
+            window.dataLayer = window.dataLayer || [];
+            window.dataLayer.push({
+              event: 'purchase',
+              transaction_id: purchaseData.orderId,
+              value: purchaseData.value,
+              currency: purchaseData.currency || 'UAH',
+            });
+            console.log('Purchase event fired for confirmed payment:', purchaseData.orderId);
+          } else {
+            console.log('Purchase event NOT fired - payment not confirmed yet or order not found');
+          }
+        })
+        .catch((err) => {
+          console.warn('Error checking order status for purchase event:', err);
+        });
     }
 
     if (typeof window !== "undefined") {

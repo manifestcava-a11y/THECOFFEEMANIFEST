@@ -12,6 +12,13 @@ import { Textarea } from "@/components/ui/textarea";
 import { useNavigate } from "react-router-dom";
 import { useLanguage } from "../contexts/LanguageContext";
 
+// Declare dataLayer for TypeScript
+declare global {
+  interface Window {
+    dataLayer: any[];
+  }
+}
+
 type ShippingMethod = "nova_department" | "nova_courier" | "own_courier" | "nova_postomat";
 type PaymentMethod = "liqpay" | "apple_pay" | "google_pay" | "cash";
 
@@ -688,7 +695,18 @@ export default function Checkout() {
 
       // Handle different payment methods
       if (paymentMethod === "cash" || data.paymentMethod === "cash") {
-        // For cash payment, clear cart and show success message
+        // For cash payment, fire purchase event immediately (same time as email)
+        if (typeof window !== "undefined" && data.orderId) {
+          window.dataLayer = window.dataLayer || [];
+          window.dataLayer.push({
+            event: 'purchase',
+            transaction_id: data.orderId,
+            value: Number((totalPrice + shippingPrice).toFixed(2)),
+            currency: 'UAH',
+          });
+        }
+        
+        // Clear cart and show success message
         clear();
         toast({ 
           title: t('checkout.success.title'), 
