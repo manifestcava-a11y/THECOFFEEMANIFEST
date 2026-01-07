@@ -582,6 +582,10 @@ export default function Checkout() {
 
     try {
       setIsSubmitting(true);
+      // Reset pending purchase marker before a new payment attempt
+      if (typeof window !== "undefined") {
+        sessionStorage.removeItem("pendingPurchase");
+      }
       
       // Debug: Log what we're sending - VERIFY VARIANT IS IN ITEMS
       console.log('=== CHECKOUT SUBMIT DEBUG ===');
@@ -697,6 +701,20 @@ export default function Checkout() {
 
       // For online payments (LiqPay, Apple Pay, Google Pay), redirect to payment
       if (data.data && data.signature) {
+        // Persist purchase details so we can fire conversion after confirmed return
+        if (typeof window !== "undefined" && data.orderId) {
+          const purchaseValue = Number((totalPrice + shippingPrice).toFixed(2));
+          sessionStorage.setItem(
+            "pendingPurchase",
+            JSON.stringify({
+              orderId: data.orderId,
+              value: purchaseValue,
+              currency: "UAH",
+              createdAt: Date.now(),
+            })
+          );
+        }
+
         // Redirect to LiqPay page with prepared data/signature
         const form = document.createElement('form');
         form.method = 'POST';

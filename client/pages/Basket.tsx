@@ -6,26 +6,67 @@ import { Link, useSearchParams } from "react-router-dom";
 import { toast } from "@/components/ui/use-toast";
 import { useNavigate } from "react-router-dom";
 import { useLanguage } from "../contexts/LanguageContext";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
+
+// Declare dataLayer for TypeScript
+declare global {
+  interface Window {
+    dataLayer: any[];
+  }
+}
 
 export default function Basket() {
   const { items, updateQuantity, removeItem, totalPrice, clear } = useCart();
   const navigate = useNavigate();
   const { t } = useLanguage();
   const [searchParams, setSearchParams] = useSearchParams();
+  const hasFiredPurchase = useRef(false);
 
   // Clear cart when returning from LiqPay payment
   useEffect(() => {
     const paymentReturn = searchParams.get('payment');
-    if (paymentReturn === 'return' && items.length > 0) {
+    if (paymentReturn !== 'return' || hasFiredPurchase.current) return;
+
+    hasFiredPurchase.current = true;
+
+    // Remove the query parameter from URL ASAP
+    setSearchParams({}, { replace: true });
+
+    const pendingRaw =
+      typeof window !== "undefined" ? sessionStorage.getItem("pendingPurchase") : null;
+
+    let purchaseData: { orderId: string; value: number; currency?: string } | null = null;
+    if (pendingRaw) {
+      try {
+        purchaseData = JSON.parse(pendingRaw);
+      } catch (e) {
+        console.warn("Failed to parse pendingPurchase data", e);
+      }
+    }
+
+    // Clear cart and show success toast only if we still have items
+    if (items.length > 0) {
       clear();
-      // Remove the query parameter from URL
-      setSearchParams({}, { replace: true });
       toast({
         title: t('checkout.success.title'),
         description: t('checkout.success.desc'),
         variant: "default" as any
       });
+    }
+
+    // Push purchase event to dataLayer (once)
+    if (purchaseData && typeof window !== "undefined") {
+      window.dataLayer = window.dataLayer || [];
+      window.dataLayer.push({
+        event: 'purchase',
+        transaction_id: purchaseData.orderId,
+        value: purchaseData.value,
+        currency: purchaseData.currency || 'UAH',
+      });
+    }
+
+    if (typeof window !== "undefined") {
+      sessionStorage.removeItem("pendingPurchase");
     }
   }, [searchParams, items.length, clear, setSearchParams, t]);
 
