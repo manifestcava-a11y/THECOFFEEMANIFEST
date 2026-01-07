@@ -55,34 +55,78 @@ export default function Basket() {
     }
 
     // For LiqPay: Check if payment was actually confirmed (same logic as email trigger)
-    // Only fire purchase event if order exists with status "completed" (payment confirmed)
+    // Emails are sent in liqpay-callback.ts AFTER:
+    // 1. Payment status is "success" or "sandbox" (line 195)
+    // 2. Order is saved with status "completed" (line 364)
+    // 3. Order items are saved (line 428-445)
+    // 4. Order exists with customer_email AND items exist (line 451, 463)
+    // We need to check the same conditions and retry since webhook is async
     if (purchaseData?.orderId) {
-      // Check order status in database - same check as email trigger
-      supabase
-        .from("orders")
-        .select("id, status, order_id")
-        .eq("order_id", purchaseData.orderId)
-        .eq("status", "completed")
-        .single()
-        .then(({ data: order, error }) => {
-          // Only fire purchase event if order exists and is completed (payment confirmed)
-          // This matches exactly when emails are sent in liqpay-callback.ts
-          if (order && !error && typeof window !== "undefined") {
-            window.dataLayer = window.dataLayer || [];
-            window.dataLayer.push({
-              event: 'purchase',
-              transaction_id: purchaseData.orderId,
-              value: purchaseData.value,
-              currency: purchaseData.currency || 'UAH',
-            });
-            console.log('Purchase event fired for confirmed payment:', purchaseData.orderId);
-          } else {
-            console.log('Purchase event NOT fired - payment not confirmed yet or order not found');
-          }
-        })
-        .catch((err) => {
-          console.warn('Error checking order status for purchase event:', err);
-        });
+      let retryCount = 0;
+      const maxRetries = 10; // Try for up to 10 seconds (1 second intervals)
+      
+      const checkOrderAndFireEvent = () => {
+        // Check order status in database - same conditions as email trigger
+        supabase
+          .from("orders")
+          .select("id, status, order_id, customer_email")
+          .eq("order_id", purchaseData.orderId)
+          .eq("status", "completed")
+          .single()
+          .then(({ data: order, error }) => {
+            if (order && !error && order.customer_email) {
+              // Order exists and is completed - now check if items exist (same as email check)
+              supabase
+                .from("order_items")
+                .select("id")
+                .eq("order_id", order.id)
+                .limit(1)
+                .then(({ data: items, error: itemsError }) => {
+                  // Only fire purchase event if order exists, is completed, has email, AND has items
+                  // This matches EXACTLY when emails are sent in liqpay-callback.ts (line 451, 463)
+                  if (items && items.length > 0 && !itemsError && typeof window !== "undefined") {
+                    window.dataLayer = window.dataLayer || [];
+                    window.dataLayer.push({
+                      event: 'purchase',
+                      transaction_id: purchaseData.orderId,
+                      value: purchaseData.value,
+                      currency: purchaseData.currency || 'UAH',
+                    });
+                    console.log('Purchase event fired for confirmed payment (same conditions as email):', purchaseData.orderId);
+                  } else if (retryCount < maxRetries) {
+                    // Order exists but items might not be saved yet - retry
+                    retryCount++;
+                    setTimeout(checkOrderAndFireEvent, 1000);
+                  } else {
+                    console.log('Purchase event NOT fired - items not found after retries');
+                  }
+                })
+                .catch((err) => {
+                  console.warn('Error checking order items for purchase event:', err);
+                  if (retryCount < maxRetries) {
+                    retryCount++;
+                    setTimeout(checkOrderAndFireEvent, 1000);
+                  }
+                });
+            } else if (retryCount < maxRetries) {
+              // Order not found or not completed yet - webhook might not have processed
+              retryCount++;
+              setTimeout(checkOrderAndFireEvent, 1000);
+            } else {
+              console.log('Purchase event NOT fired - payment not confirmed after retries');
+            }
+          })
+          .catch((err) => {
+            console.warn('Error checking order status for purchase event:', err);
+            if (retryCount < maxRetries) {
+              retryCount++;
+              setTimeout(checkOrderAndFireEvent, 1000);
+            }
+          });
+      };
+      
+      // Start checking immediately
+      checkOrderAndFireEvent();
     }
 
     if (typeof window !== "undefined") {
